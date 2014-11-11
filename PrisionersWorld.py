@@ -31,22 +31,23 @@ YELLOW   = ( 255, 255,   0)
 t = 1.8
 r = 1.0
 s = 0.0
-p = 0.00001
+p = 0.0
 
 candidatex = 0.0
 candidatey = 0.0
 
 
 # game settings hard coded for now
-generations = 100
+generations = 20
 n = 50
 cellsize = 5
+matrix_size = (n, n)
 size = (cellsize*n, cellsize*n)
 
 # create boards fo the game
-array_one = numpy.ndarray(size)
-array_two = numpy.ndarray(size)
-array_three = numpy.ndarray(size)
+array_one = numpy.ndarray(matrix_size)
+array_two = numpy.ndarray(matrix_size)
+array_three = numpy.ndarray(matrix_size)
 
 # create pygame window
 screen = pygame.display.set_mode(size)
@@ -60,11 +61,15 @@ score = array_three
 # create a defector, hard coded for now
 for i in range(n):
         for j in range(n):
-                score[i][j] = 0
-                current[i][j] = 0
-                history[i][j] = 0
+                score[i][j] = 0.0
+                current[i][j] = 0.0
+                history[i][j] = 0.0
 
-current[[n/2],[n/2]] = 1
+current[[n//2],[n//2]] = 1
+
+print history
+print current
+
 
 # main loop that calculate all iteractions of the game
 #must be put in a thread so the window will stop freezing
@@ -189,21 +194,21 @@ for bob in range(generations):
                                 if score[i-1][j-1] >= score[candidatex][candidatey]:
                                         candidatex=i-1
                                         candidatey=j-1
-                        if i-1 >= 0 and j+1 >= 0 :
+                        if i-1 >= 0 and j+1 <n:
                                 if score[i-1][j+1] >= score[candidatex][candidatey]:
                                         candidatex=i-1
                                         candidatey=j+1
-                        if i+1 >= 0 and j-1 >= 0 :
+                        if i+1 < n and j-1 >= 0:
                                 if score[i+1][j-1] >= score[candidatex][candidatey]:
                                         candidatex=i+1
                                         candidatey=j-1
-                        if i+1 >= 0 and j+1 >= 0 :
+                        if i+1 < n and j+1 < n:
                                 if score[i+1][j+1] >= score[candidatex][candidatey]:
                                         candidatex=i+1
                                         candidatey=j+1
-                        if current[candidatex][candidatey] == 0:
+                        if history[candidatex][candidatey] == 0:
                                 current[i][j] = 0
-                        elif current[candidatey][candidatey] == 1:
+                        elif history[candidatex][candidatey] == 1:
                                 current[i][j] = 1
 
                                 # test possible results, must add diagonals
