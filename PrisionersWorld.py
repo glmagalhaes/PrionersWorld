@@ -2,21 +2,18 @@ import pygame
 from pygame import gfxdraw
 from pygame.locals import *
 import numpy
-	
-class Rectangle(pygame.sprite.Sprite):
-	
-	def __init__(self, x, y, width, height,color):
         
-        	pygame.sprite.Sprite.__init__(self)
- 
-        	# Make the Rect
-        	self.image = pygame.Surface([width, height])
-        	self.image.fill(color)
- 
-        	# Make our top-left corner the passed-in location.
-        	self.rect = self.image.get_rect()
-        	self.rect.y = y
-        	self.rect.x = x 
+class Rectangle(pygame.sprite.Sprite):
+        
+        def __init__(self, x, y, width, height,color):
+                pygame.sprite.Sprite.__init__(self)
+                # Make the Rect
+                self.image = pygame.Surface([width, height])
+                self.image.fill(color)
+                # Make our top-left corner the passed-in location.
+                self.rect = self.image.get_rect()
+                self.rect.y = y
+                self.rect.x = x 
 
 # 0 - C
 # 1 - D
@@ -36,19 +33,20 @@ r = 1.0
 s = 0.0
 p = 0.00001
 
-# score holders
-c = 0.0
-d = 0.0
+candidatex = 0.0
+candidatey = 0.0
+
 
 # game settings hard coded for now
 generations = 100
-n = 100
+n = 50
 cellsize = 5
 size = (cellsize*n, cellsize*n)
 
 # create boards fo the game
 array_one = numpy.ndarray(size)
 array_two = numpy.ndarray(size)
+array_three = numpy.ndarray(size)
 
 # create pygame window
 screen = pygame.display.set_mode(size)
@@ -57,9 +55,7 @@ pygame.display.set_caption("Prisoner's World")
 # set the boards' function
 current = array_one
 history = array_two
-
-
-
+score = array_three
 
 # create a deflector, hard coded for now
 current[[n/2],[n/2]] = 1
@@ -68,116 +64,173 @@ current[[n/2],[n/2]] = 1
 # main loop that calculate all iteractions of the game
 #must be put in a thread so the window will stop freezing
 for bob in range(generations):
-    rect_list = pygame.sprite.Group()    
+        rect_list = pygame.sprite.Group()    
 
-    temp = current
-    current = history
-    history = temp
+        temp = current
+        current = history
+        history = temp
     
-    #print history
-    #print current
-    print bob
-    for i in range(n):
-        for j in range(n):
-            flag_defector = 0
-            c = 0.0
-            d = 0.0
-			# test possible results, must add diagonals
-			# yes, it's hard coded no fucking loop
-            #adjacent            
-            if i-1 >= 0:
-                if history[i-1][j] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if i+1 < n:
-                if history[i+1][j] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if j-1 >= 0:
-                if history[i][j-1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if j+1 < n:
-                if history[i][j+1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            #diagonal
-            if i-1 >= 0 and j-1 >= 0 :
-                if history[i-1][j-1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if i-1 >= 0 and j+1 < n :
-                if history[i-1][j+1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if i+1 < n and j-1 >= 0 :
-                if history[i+1][j-1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
-            if i+1 < n and j+1 < n :
-                if history[i+1][j+1] == 0:
-                    c += r
-                    d += t
-                else:
-                    flag_defector +=1
-                    c += s
-                    d += p
+        #print history
+        #print current
+        print bob
+        
+        for i in range(n):
+                for j in range(n):
+                        candidatex=i
+                        candidatey=j
+                        if i-1 >= 0:
+                                if score[i-1][j] >= score[candidatex][candidatey]:
+                                        candidatex=i-1
+                                        candidatey=j
+                        if i+1 < n:
+                                if score[i+1][j] >= score[candidatex][candidatey]:
+                                        candidatex=i+1
+                                        candidatey=j
+                        if j-1 >= 0:
+                                if score[i][j-1] >= score[candidatex][candidatey]:
+                                        candidatex=i
+                                        candidatey=j-1
+                        if j+1 < n:
+                                if score[i-1][j+1] >= score[candidatex][candidatey]:
+                                        candidatex=i
+                                        candidatey=j+1
+                        if i-1 >= 0 and j-1 >= 0 :
+                                if score[i-1][j-1] >= score[candidatex][candidatey]:
+                                        candidatex=i-1
+                                        candidatey=j-1
+                        if i-1 >= 0 and j+1 >= 0 :
+                                if score[i-1][j+1] >= score[candidatex][candidatey]:
+                                        candidatex=i-1
+                                        candidatey=j+1
+                        if i+1 >= 0 and j-1 >= 0 :
+                                if score[i+1][j-1] >= score[candidatex][candidatey]:
+                                        candidatex=i+1
+                                        candidatey=j-1
+                        if i+1 >= 0 and j+1 >= 0 :
+                                if score[i+1][j+1] >= score[candidatex][candidatey]:
+                                        candidatex=i+1
+                                        candidatey=j+1
+                        if current[candidatex][candidatey] == 0:
+                                current[i][j] = 0
+                        elif current[candidatey][candidatey] == 1:
+                                current[i][j] = 1
+                
+        for i in range(n):
+                for j in range(n):
+                                # test possible results, must add diagonals
+                                # yes, it's hard coded no fucking loop
+                    #adjacent
+                        if history[i][j] == 0:#you cooperate
+                                if i-1 >= 0:
+                                        if history[i-1][j] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                                if i+1 < n:
+                                        if history[i+1][j] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                                if j-1 >= 0:
+                                        if history[i][j-1] == 0:
+                                                score[i][j] += r                                                
+                                        else:
+                                                score[i][j] += s
+                                if j+1 < n:
+                                        if history[i][j+1] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                   #diagonal
+                                if i-1 >= 0 and j-1 >= 0 :
+                                        if history[i-1][j-1] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                                if i-1 >= 0 and j+1 < n :
+                                        if history[i-1][j+1] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                                if i+1 < n and j-1 >= 0 :
+                                        if history[i+1][j-1] == 0:
+                                                score[i][j] += r                                
+                                        else:
+                                                score[i][j] += s                    
+                                if i+1 < n and j+1 < n :
+                                        if history[i+1][j+1] == 0:
+                                                score[i][j] += r
+                                        else:
+                                                score[i][j] += s
+                        else:#you defect
+                                if i-1 >= 0:
+                                        if history[i-1][j] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
+                                if i+1 < n:
+                                        if history[i+1][j] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
+                                if j-1 >= 0:
+                                        if history[i][j-1] == 0:
+                                                score[i][j] += t                                                
+                                        else:
+                                                score[i][j] += p
+                                if j+1 < n:
+                                        if history[i][j+1] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
+                   #diagonal
+                                if i-1 >= 0 and j-1 >= 0 :
+                                        if history[i-1][j-1] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
+                                if i-1 >= 0 and j+1 < n :
+                                        if history[i-1][j+1] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
+                                if i+1 < n and j-1 >= 0 :
+                                        if history[i+1][j-1] == 0:
+                                                score[i][j] += t                                
+                                        else:
+                                                score[i][j] += p                    
+                                if i+1 < n and j+1 < n :
+                                        if history[i+1][j+1] == 0:
+                                                score[i][j] += t
+                                        else:
+                                                score[i][j] += p
 
-			# Paint the right color for the pixel on screen
-            if c >= d:
-                current[[i],[j]] = 0
-            elif history[i][j] == 1 or flag_defector == 1:
-                current[i][j] = 1
-            if current[i][j] == 0 and history[i][j] == 0:
-                bluerect = Rectangle(i*cellsize,j*cellsize,cellsize ,cellsize,BLUE)          
-                rect_list.add(bluerect)               
-                # gfxdraw.pixel(screen, i , j , BLUE)
-            if current[i][j] == 0 and history[i][j] == 1:
-                greenrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,GREEN)                 
-                rect_list.add(greenrect)               
-                # screen.set_at((i, j), GREEN)
-            if current[i][j] == 1 and history[i][j] == 0:
-                yellowrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,YELLOW)                    
-                rect_list.add(yellowrect)               
-                # screen.set_at((i, j), YELLOW)
-            if current[i][j] == 1 and history[i][j] == 1:
-                redrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,RED)              
-                rect_list.add(redrect)                
-                # screen.set_at((i, j), RED)
-            
-                        
-    # Update Screen
-    rect_list.update()
-    rect_list.draw(screen)
-    pygame.display.flip()
+                                # Paint the right color for the pixel on screen
+        #            if c >= d:
+        #                current[i][j] = 0
+        #            elif history[i][j] == 1 or flag_defector == 1:
+        #            if history[i][j] == 1 or flag_defector == 1:
+        #                current[i][j] = 1
+                                if current[i][j] == 0 and history[i][j] == 0:
+                                        bluerect = Rectangle(i*cellsize,j*cellsize,cellsize ,cellsize,BLUE)          
+                                        rect_list.add(bluerect)               
+                                        # gfxdraw.pixel(screen, i , j , BLUE)
+                                if current[i][j] == 0 and history[i][j] == 1:
+                                        greenrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,GREEN)                 
+                                        rect_list.add(greenrect)               
+                                        # screen.set_at((i, j), GREEN)
+                                if current[i][j] == 1 and history[i][j] == 0:
+                                        yellowrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,YELLOW)                    
+                                        rect_list.add(yellowrect)               
+                                        # screen.set_at((i, j), YELLOW)
+                                if current[i][j] == 1 and history[i][j] == 1:
+                                        redrect = Rectangle(i*cellsize,j*cellsize,cellsize,cellsize,RED)              
+                                        rect_list.add(redrect)                
+                                        # screen.set_at((i, j), RED)  
+            # Update Screen
+                        rect_list.update()
+                        rect_list.draw(screen)
+                        pygame.display.flip()
 #print history
 #print current
 
@@ -185,6 +238,6 @@ for bob in range(generations):
 done = False
 while not done:
     for event in pygame.event.get():
-		#quit program event
+                #quit program event
         if event.type == pygame.QUIT:
             done = True
